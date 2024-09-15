@@ -17,10 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.net.william.crud.model.Pessoa;
 
-
-
-
-
 @CrossOrigin
 @RestController
 public class PessoaREST {
