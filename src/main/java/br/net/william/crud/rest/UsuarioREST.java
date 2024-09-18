@@ -2,9 +2,10 @@ package br.net.william.crud.rest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Comparator;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import java.util.Comparator;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,8 +23,9 @@ public class UsuarioREST {
     public static List<Usuario> lista = new ArrayList<>();
 
     @GetMapping("/usuarios")
-    public List<Usuario> obterTodosUsuarios() {
-        return lista;
+    public ResponseEntity<List<Usuario>> obterTodosUsuarios() {
+        //return usuarios;
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
     @GetMapping("/usuarios/{id}")    
