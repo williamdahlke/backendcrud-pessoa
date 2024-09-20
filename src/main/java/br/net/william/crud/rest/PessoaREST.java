@@ -1,9 +1,9 @@
 package br.net.william.crud.rest;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,65 +16,62 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.net.william.crud.model.Pessoa;
+import br.net.william.crud.model.Usuario;
+import br.net.william.crud.repository.PessoaRepository;
 
 @CrossOrigin
 @RestController
 public class PessoaREST {
-    public static List<Pessoa> pessoas = new ArrayList<>();
+    @Autowired
+    private PessoaRepository pessoaRepository;
 
     @GetMapping("/pessoas")
     public ResponseEntity<List<Pessoa>> obterTodasPessoas(){
+        List<Pessoa> pessoas = pessoaRepository.findAll();
         return ResponseEntity.ok(pessoas);
     }
 
     @GetMapping("/pessoas/{id}")
     public ResponseEntity<Pessoa> obterPessoaPorId(@PathVariable("id") int id) {
-        Pessoa p = pessoas.stream().filter(pess -> pess.getId() == id).findAny().orElse(null);
-        if (p == null){
+        Optional<Pessoa> op = pessoaRepository.findById(id);
+        if (op.isPresent()){
+            return ResponseEntity.ok(op.get());
+        } 
+        else{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } else{
-            return ResponseEntity.ok(p);
         }
     }
 
     @PostMapping("/pessoas")
     public ResponseEntity<Pessoa> inserirPessoa(@PathVariable Pessoa pessoa) {
-        Pessoa p = pessoas.stream().filter(pess -> pess.getNome().equals(pessoa.getNome())).findAny().orElse(null);
-        if (p != null){
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
-        p = pessoas.stream().max(Comparator.comparing(Pessoa::getId)).orElse(null);
-
-        if (p == null){
-            pessoa.setId(1);
+        Optional<Pessoa> op = pessoaRepository.findByNome(pessoa.getNome());
+        if (op.isPresent()){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(op.get());
         } else{
-            pessoa.setId(p.getId() + 1);
+            pessoa.setId(-1);
+            pessoaRepository.save(pessoa);
+            return ResponseEntity.status(HttpStatus.CREATED).body(pessoa);
         }
-        pessoas.add(pessoa);        
-        return ResponseEntity.status(HttpStatus.CREATED).body(pessoa);
     }
     
     @PutMapping("pessoas/{id}")
     public ResponseEntity<Pessoa> alterar(@PathVariable("id") int id, @RequestBody Pessoa pessoa) {
-        Pessoa p = pessoas.stream().filter(pess -> pess.getId() == id).findAny().orElse(null);
-        if (p != null){
-            p.setNome(pessoa.getNome());
-            p.setIdade(pessoa.getIdade());
-            p.setDataNascimento(pessoa.getDataNascimento());
-            p.setMotorista(pessoa.getMotorista());
-            return ResponseEntity.ok(p);
-        }
-        else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        Optional<Pessoa> op = pessoaRepository.findByNome(pessoa.getNome());
+        if (op.isPresent()){
+            pessoa.setId(id);
+            pessoaRepository.save(pessoa);
+            return ResponseEntity.ok(pessoa);            
+        } else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(op.get());
         }
     }    
 
     @DeleteMapping("pessoas/{id}")
     public ResponseEntity<Pessoa> removerPessoa(@PathVariable("id") int id){
-        Pessoa pessoa = pessoas.stream().filter(pess -> pess.getId() == id).findAny().orElse(null);
-        if (pessoa != null){
-            pessoas.removeIf(p-> p.getId() == id);
-            return ResponseEntity.ok(pessoa);
+        Optional<Pessoa> op = pessoaRepository.findById(id);
+        if (op.isPresent()){
+            pessoaRepository.delete(op.get());
+            return ResponseEntity.ok(op.get());
         } else{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
