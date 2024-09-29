@@ -7,7 +7,7 @@ create table tb_usuario(
 );
 
 insert into tb_usuario (nome_usu, login_usu, senha_usu, perfil_usu)
-values ('Razer', 'razer', 'razer', 'ADMIN';)
+values ('Razer', 'razer', 'razer', 'ADMIN');
 
 create table tb_pessoa(
     id_pes integer primary key generated always as identity,
